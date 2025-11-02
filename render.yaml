@@ -1,7 +1,49 @@
+# A basic blueprint for deploying a Python Flask web service on Render
+
+# The slug value is used for internal reference and is optional.
+# If omitted, Render will generate a slug based on the file name and service type.
+# slug: flask-app-blueprint
+
+# The name is the human-readable name of the blueprint, used in the Render dashboard.
+name: Flask-App
+
+# Define the services included in this blueprint
 services:
+  # The type of service: 'web' for web applications, 'worker' for background jobs, etc.
   - type: web
-    name: avyon
+    # The name of the service (will be the default subdomain if not custom domain is used)
+    name: my-flask-app
+    # The environment/runtime your application uses
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
-    plan: free
+    # The branch of your repository to deploy (e.g., main, master)
+    # The default is to use the branch the blueprint is found in.
+    # branch: main
+    
+    # The build command to install dependencies (uses pip by default)
+    # This assumes you have a 'requirements.txt' file
+    buildCommand: pip install -r requirements.txt
+    
+    # The start command to run your Flask application.
+    # Render recommends using a production WSGI server like Gunicorn.
+    # Replace 'app:app' with the name of your module and Flask application instance (e.g., 'wsgi.py:app').
+    startCommand: gunicorn app:app
+    
+    # The instance type (size of the server). 'starter' is often enough for small apps.
+    plan: starter
+    
+    # The port your web service should listen on. For web services, this is almost always 8080.
+    # Render automatically handles routing external traffic to this port.
+    port: 8080
+    
+    # A health check path (optional but recommended for reliability)
+    # This should be a path in your Flask app that returns a 200 status code (e.g., a basic home route).
+    healthCheckPath: /
+    
+    # Environment variables (optional)
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12 # Specify a Python version
+      - key: FLASK_ENV
+        value: production
+      # - key: SECRET_KEY
+      #   generateValue: true # Use Render to generate a secret value
